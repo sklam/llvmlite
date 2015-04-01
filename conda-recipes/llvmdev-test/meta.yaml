@@ -1,10 +1,10 @@
 package:
   name: llvmdev
-  version: "3.5.1p1"
+  version: "3.5.1p2"
 
 source:
-  fn: 3.5.1.tar.gz
-  url: https://github.com/numba/llvm-mirror/archive/3.5.1p1.tar.gz
+  fn: 3.5.1p2.tar.gz
+  url: https://github.com/sklam/llvm/archive/3.5.1p2.tar.gz
 
 build:
   number: 0
