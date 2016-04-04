@@ -6,6 +6,7 @@ package:
 source:
   # somehow git_url with relative path does not update GIT_DESCRIBE_TAG
   git_url: https://github.com/numba/llvmlite.git
+  git_rev: v0.10.0
 
 build:
   number: {{ environ.get('GIT_DESCRIBE_NUMBER', 0) }}
