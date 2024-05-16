@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import os
+import typing as _tp
 from ctypes import (POINTER, c_char_p, c_longlong, c_int, c_size_t,
-                    c_void_p, string_at)
+                    c_void_p, string_at, c_bool)
 
 from llvmlite.binding import ffi
 from llvmlite.binding.common import _decode_string, _encode_string
@@ -15,6 +18,12 @@ def get_process_triple():
     """
     with ffi.OutputString() as out:
         ffi.lib.LLVMPY_GetProcessTriple(out)
+        return str(out)
+
+
+def normalize_target_triple(triple):
+    with ffi.OutputString() as out:
+        ffi.lib.LLVMPY_NormalizeTargetTriple(_encode_string(triple), out)
         return str(out)
 
 
@@ -172,8 +181,6 @@ CODEMODEL = frozenset(['default', 'jitdefault', 'small', 'kernel', 'medium',
 
 
 class Target(ffi.ObjectRef):
-    _triple = ''
-
     # No _dispose() method since LLVMGetTargetFromTriple() returns a
     # persistent object.
 
@@ -195,9 +202,25 @@ class Target(ffi.ObjectRef):
                                                         outerr)
             if not target:
                 raise RuntimeError(str(outerr))
-            target = cls(target)
-            target._triple = triple
+            target = cls(target, triple)
             return target
+
+    def __init__(self, ptr, triple=None):
+        super().__init__(ptr)
+        if not triple:
+            triple = self.name
+        self._triple = triple
+
+    @classmethod
+    def iter_targets(cls) -> _tp.Iterator[Target]:
+        """Iterator of all targets in the target registry.
+
+        Uses LLVM C-API: LLVMGetFirstTarget, LLVMGetNextTarget
+        """
+        ptr = ffi.lib.LLVMPY_GetFirstTarget()
+        while ptr:
+            yield cls(ptr)
+            ptr = ffi.lib.LLVMPY_GetNextTarget(ptr)
 
     @property
     def name(self):
@@ -215,6 +238,10 @@ class Target(ffi.ObjectRef):
 
     def __str__(self):
         return "<Target {0} ({1})>".format(self.name, self.description)
+
+    @property
+    def has_target_machine(self):
+        return bool(ffi.lib.LLVMPY_TargetHasTargetMachine(self))
 
     def create_target_machine(self, cpu='', features='',
                               opt=2, reloc='default', codemodel='jitdefault',
@@ -325,6 +352,9 @@ class TargetMachine(ffi.ObjectRef):
             ffi.lib.LLVMPY_GetTargetMachineTriple(self, out)
             return str(out)
 
+    def get_all_processor_descriptions(self):
+        ffi.lib.LLVMPY_GetAllProcessorDescriptions(self)
+
 
 def has_svml():
     """
@@ -340,6 +370,9 @@ def has_svml():
 # FFI
 
 ffi.lib.LLVMPY_GetProcessTriple.argtypes = [POINTER(c_char_p)]
+
+ffi.lib.LLVMPY_NormalizeTargetTriple.argtypes = [c_char_p, POINTER(c_char_p)]
+ffi.lib.LLVMPY_NormalizeTargetTriple.restype = None
 
 ffi.lib.LLVMPY_GetHostCPUFeatures.argtypes = [POINTER(c_char_p)]
 ffi.lib.LLVMPY_GetHostCPUFeatures.restype = c_int
@@ -388,6 +421,15 @@ ffi.lib.LLVMPY_GetTargetName.restype = c_char_p
 
 ffi.lib.LLVMPY_GetTargetDescription.argtypes = [ffi.LLVMTargetRef]
 ffi.lib.LLVMPY_GetTargetDescription.restype = c_char_p
+
+ffi.lib.LLVMPY_GetFirstTarget.argtypes = []
+ffi.lib.LLVMPY_GetFirstTarget.restype = ffi.LLVMTargetRef
+
+ffi.lib.LLVMPY_GetNextTarget.argtypes = [ffi.LLVMTargetRef]
+ffi.lib.LLVMPY_GetNextTarget.restype = ffi.LLVMTargetRef
+
+ffi.lib.LLVMPY_TargetHasTargetMachine.argtypes = [ffi.LLVMTargetRef]
+ffi.lib.LLVMPY_TargetHasTargetMachine.restype = c_bool
 
 ffi.lib.LLVMPY_CreateTargetMachine.argtypes = [
     ffi.LLVMTargetRef,

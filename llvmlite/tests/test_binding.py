@@ -1860,6 +1860,12 @@ class TestTarget(BaseTest):
         self.assertIn(target.name, s)
         self.assertIn(target.description, s)
 
+    def test_iter_targets(self):
+        for target in llvm.Target.iter_targets():
+            print("----")
+            print(target.name)
+            print(target.description)
+
 
 class TestTargetData(BaseTest):
 

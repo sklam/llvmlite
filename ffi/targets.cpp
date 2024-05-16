@@ -5,6 +5,7 @@
 #include "llvm/Analysis/TargetLibraryInfo.h"
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/IR/Type.h"
+#include "llvm/MC/MCSubtargetInfo.h"
 #include "llvm/MC/TargetRegistry.h"
 #include "llvm/Support/Host.h"
 #include "llvm/Target/TargetMachine.h"
@@ -32,6 +33,11 @@ extern "C" {
 API_EXPORT(void)
 LLVMPY_GetProcessTriple(const char **Out) {
     *Out = LLVMPY_CreateString(llvm::sys::getProcessTriple().c_str());
+}
+
+API_EXPORT(void)
+LLVMPY_NormalizeTargetTriple(const char *Triple, const char **Out) {
+    *Out = LLVMPY_CreateString(LLVMNormalizeTargetTriple(Triple));
 }
 
 /**
@@ -116,6 +122,12 @@ LLVMPY_ABIAlignmentOfElementType(LLVMTargetDataRef TD, LLVMTypeRef Ty) {
 }
 
 API_EXPORT(LLVMTargetRef)
+LLVMPY_GetFirstTarget() { return LLVMGetFirstTarget(); }
+
+API_EXPORT(LLVMTargetRef)
+LLVMPY_GetNextTarget(LLVMTargetRef target) { return LLVMGetNextTarget(target); }
+
+API_EXPORT(LLVMTargetRef)
 LLVMPY_GetTargetFromTriple(const char *Triple, const char **ErrOut) {
     char *ErrorMessage;
     LLVMTargetRef T;
@@ -133,6 +145,11 @@ LLVMPY_GetTargetName(LLVMTargetRef T) { return LLVMGetTargetName(T); }
 API_EXPORT(const char *)
 LLVMPY_GetTargetDescription(LLVMTargetRef T) {
     return LLVMGetTargetDescription(T);
+}
+
+API_EXPORT(bool)
+LLVMPY_TargetHasTargetMachine(LLVMTargetRef T) {
+    return LLVMTargetHasTargetMachine(T);
 }
 
 API_EXPORT(LLVMTargetMachineRef)
@@ -242,6 +259,20 @@ LLVMPY_CreateTargetMachineData(LLVMTargetMachineRef TM) {
 API_EXPORT(void)
 LLVMPY_AddAnalysisPasses(LLVMTargetMachineRef TM, LLVMPassManagerRef PM) {
     LLVMAddAnalysisPasses(TM, PM);
+}
+
+API_EXPORT(void)
+LLVMPY_GetAllProcessorDescriptions(LLVMTargetMachineRef TM) {
+    llvm::TargetMachine *tm = llvm::unwrap(TM);
+    // https://llvm.org/doxygen/classllvm_1_1TargetMachine.html#a3f850d2654c88a73a7d6b1701ae5f778
+    auto ST = llvm::unwrap(TM)->getMCSubtargetInfo();
+    // Required LLVM17 for these
+    // getAllProcessorDescriptions()
+    // getAllProcessorFeatures()
+    // Doc: https://llvm.org/doxygen/classllvm_1_1MCSubtargetInfo.html
+    for (const auto &kv : ST->getAllProcessorDescriptions()) {
+        printf("%s\n", kv.key);
+    }
 }
 
 API_EXPORT(const void *)
