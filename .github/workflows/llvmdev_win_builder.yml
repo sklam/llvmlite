@@ -2,6 +2,10 @@ name: llvmdev_win_builder
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - *
+
 
 jobs:
 
