@@ -43,4 +43,13 @@ jobs:
       run: |
         source /c/Miniconda3/Scripts/activate
         conda activate builder
-        conda build ./conda-recipes/llvmdev_windows
+        RECIPE_NAME=./conda-recipes/llvmdev_manylinux
+        conda build $RECIPE_NAME
+        echo "OUTPUT=$(conda build --output $RECIPE_NAME)" >> $GITHUB_ENV
+
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: llvmdev
+        path: ${{ env.OUTPUT }}

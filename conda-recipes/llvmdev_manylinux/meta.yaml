@@ -2,7 +2,7 @@
 {% set shortversion = "15.0" %}
 {% set version = "15.0.7" %}
 {% set sha256_llvm = "8b5fcb24b4128cf04df1b0b9410ce8b1a729cb3c544e6da885d234280dedeac6" %}
-{% set build_number = "0" %}
+{% set build_number = "1" %}
 
 package:
   name: llvmdev
@@ -27,8 +27,8 @@ build:
   number: {{ build_number }}
   string: "manylinux"
   script_env:
-    - CFLAGS
-    - CXXFLAGS
+    - CFLAGS        [not linux]
+    - CXXFLAGS      [not linux]
     - PY_VCRUNTIME_REDIST
   ignore_run_exports:
     # Is static-linked
@@ -43,7 +43,7 @@ requirements:
     - python >=3
     - libcxx      # it is not defined{{ cxx_compiler_version }}  # [osx]
     - patch       # [not win]
-    - m2-patch   # [win]
+    - m2-patch    # [win]
     - git         # [(linux and x86_64)]
 
   host:
@@ -51,11 +51,12 @@ requirements:
     - libffi    # [unix]
     # # libxml2 supports a windows-only feature, see https://github.com/llvm/llvm-project/blob/llvmorg-17.0.6/llvm/include/llvm/WindowsManifest/WindowsManifestMerger.h
     # - libxml2   # [win]
-    - zlib       # [not win]
+    # - zlib 
+    # - zstd 
 
 test:
-  files:
-    - numba-3016.ll
+  # files:
+  #   - numba-3016.ll
   commands:
     - $PREFIX/bin/llvm-config --libs                         # [not win]
     - $PREFIX/bin/llc -version                               # [not win]

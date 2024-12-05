@@ -51,8 +51,8 @@ requirements:
     # - zstd 
 
 test:
-  files:
-    - numba-3016.ll
+  # files:
+  #   - numba-3016.ll
   commands:
     - $PREFIX/bin/llvm-config --libs                         # [not win]
     - $PREFIX/bin/llc -version                               # [not win]
