@@ -27,8 +27,8 @@ build:
   number: {{ build_number }}
   string: "manylinux"
   script_env:
-    - CFLAGS        [not linux]
-    - CXXFLAGS      [not linux]
+    - CFLAGS        [linux]
+    - CXXFLAGS      [linux]
     - PY_VCRUNTIME_REDIST
   ignore_run_exports:
     # Is static-linked
@@ -37,7 +37,7 @@ build:
 requirements:
   build:
     # Do not use the compiler on linux
-    - {{ compiler('cxx') }}    # [not linux]
+    - {{ compiler('cxx') }}  # [not linux]
     - cmake
     - ninja
     - python >=3
