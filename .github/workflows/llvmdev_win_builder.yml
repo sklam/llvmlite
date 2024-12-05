@@ -11,7 +11,7 @@ jobs:
 
   windows:
     name: Windows • Py${{ matrix.config.python }}
-    runs-on: windows-2022
+    runs-on: windows-2019
     strategy:
       matrix:
         config:
@@ -43,4 +43,4 @@ jobs:
       run: |
         source /c/Miniconda3/Scripts/activate
         conda activate builder
-        conda build ./conda-recipes/llvmdev_manylinux
+        conda build ./conda-recipes/llvmdev
