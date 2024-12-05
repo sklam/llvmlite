@@ -20,8 +20,8 @@ source:
     # Patches from conda-forge needed for windows to build
     # backport of zlib patches, can be dropped for vs15.0.3, see
     # https://reviews.llvm.org/D135457 & https://reviews.llvm.org/D136065
-    - patches/0002-CMake-Fix-Findzstd-module-for-shared-DLL-on-Windows.patch
-    - patches/no-windows-symlinks.patch
+    - ../llvmdev/patches/0002-CMake-Fix-Findzstd-module-for-shared-DLL-on-Windows.patch
+    - ../llvmdev/patches/no-windows-symlinks.patch
 
 build:
   number: {{ build_number }}
@@ -33,7 +33,7 @@ build:
 
 requirements:
   build:
-    - {{ compiler('cxx') }}
+    - {{ compiler('cxx') }}  # [not linux]
     - cmake
     - ninja
     - python >=3
@@ -46,9 +46,9 @@ requirements:
     - libcxx    # it is not defined{{ cxx_compiler_version }}  # [osx]
     - libffi    # [unix]
     # libxml2 supports a windows-only feature, see https://github.com/llvm/llvm-project/blob/llvmorg-17.0.6/llvm/include/llvm/WindowsManifest/WindowsManifestMerger.h
-    - libxml2   # [win]
-    - zlib 
-    - zstd 
+    # - libxml2   # [win]
+    # - zlib 
+    # - zstd 
 
 test:
   files:
