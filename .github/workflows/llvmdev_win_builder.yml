@@ -2,25 +2,12 @@ name: llvmdev_win_builder
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - misc/win_wheel_fix
-
 
 jobs:
 
   windows:
-    name: Windows • Py${{ matrix.config.python }}
+    name: Windows
     runs-on: windows-2019
-    strategy:
-      matrix:
-        config:
-          - {python: '3.10'}
-    env:
-      CONDA_ENV: cienv
-      PYTHON: ${{ matrix.config.python }}
-      LLVM: ${{ matrix.config.llvm }}
-      OPAQUE_POINTERS: ${{ matrix.config.opaque_pointers }}
 
     steps:
     - uses: actions/checkout@v4
@@ -37,7 +24,7 @@ jobs:
       run: |
         source /c/Miniconda3/Scripts/activate
         conda create -n builder conda-build -y
-        
+
     - name: Build
       shell: bash
       run: |
